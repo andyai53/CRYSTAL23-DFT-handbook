@@ -62,24 +62,21 @@ The examples teach a workflow, not a universal production protocol. A successful
 
 ## 🗂️ Repository map
 
-```text
-crystal23-handbook/
-|-- README.md
-|-- docs/
-|   |-- 00-before-you-run.md
-|   |-- 01-linux-and-pbs.md
-|   |-- 02-first-crystal23-job.md
-|   |-- 03-reading-input-and-output.md
-|   |-- 04-scf-convergence.md
-|   |-- 05-geometry-optimisation.md
-|   |-- 06-convergence-as-evidence.md
-|   |-- 07-properties-overview.md
-|   |-- 08-band-structure.md
-|   `-- 09-density-of-states.md
-|-- examples/
-|-- templates/
-`-- references/
-```
+The entries below are clickable:
+
+- [`README.md`](./README.md) — project entry page
+- [`docs/`](./docs/) — step-by-step tutorials
+  - [`00-before-you-run.md`](./docs/00-before-you-run.md)
+  - [`01-linux-and-pbs.md`](./docs/01-linux-and-pbs.md)
+  - [`02-first-crystal23-job.md`](./docs/02-first-crystal23-job.md)
+  - [`03-reading-input-and-output.md`](./docs/03-reading-input-and-output.md)
+  - [`04-scf-convergence.md`](./docs/04-scf-convergence.md)
+  - [`05-geometry-optimisation.md`](./docs/05-geometry-optimisation.md)
+  - [`06-convergence-as-evidence.md`](./docs/06-convergence-as-evidence.md)
+  - [`07-properties-overview.md`](./docs/07-properties-overview.md)
+  - [`08-band-structure.md`](./docs/08-band-structure.md)
+  - [`09-density-of-states.md`](./docs/09-density-of-states.md)
+  - [`index.md`](./docs/index.md) — GitHub Pages entry page
 
 Planned modules after `09` are bonding analysis, bulk and slab workflows, the surface case study, project management and troubleshooting. They will be added with tested examples rather than empty placeholder pages.
 
