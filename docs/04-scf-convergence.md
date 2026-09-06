@@ -4,7 +4,7 @@ _Estimated time: 40 minutes | Difficulty: Beginner to intermediate | Last verifi
 
 ---
 
-The self-consistent-field (SCF) procedure updates the electron density until the input density and the calculated density are consistent to the requested threshold. A calculation that reaches the maximum number of cycles without meeting that threshold is not an accepted final result, even if the last few energies look smooth.
+The self-consistent-field (SCF) procedure updates the electron density until the input and calculated densities agree to the requested threshold. Reaching the maximum number of cycles is not convergence, even when the last few energies look smooth.
 
 ## 🎯 Learning goals
 
@@ -46,23 +46,23 @@ flowchart TD
 
 ## 🧰 Controls you will encounter
 
-The exact syntax and defaults are version- and workflow-dependent; consult the [official CRYSTAL documentation](https://www.crystal.unito.it/documentation.html) before changing a production input.[^1]
+The syntax and defaults depend on the CRYSTAL version and workflow. Check the [official CRYSTAL documentation](https://www.crystal.unito.it/documentation.html) before changing a production input.[^1]
 
 | Control | Practical meaning | Safe first question |
 | --- | --- | --- |
-| `TOLDEE` | Energy threshold used in the SCF convergence test | Is the requested threshold appropriate for this stage? |
+| `TOLDEE` | Energy threshold used in the SCF test | Is the threshold appropriate for this stage? |
 | `MAXCYCLE` | Maximum number of SCF iterations allowed | Is the run genuinely converging, or only consuming more cycles? |
 | `FMIXING` | Fraction used when mixing the new density with the previous density | Is the density oscillating and would gentler mixing help? |
-| `SMEAR` | Electronic occupation broadening that can stabilise metallic or near-metallic SCF iterations | Is smearing being used as a numerical aid and reported with its units? |
+| `SMEAR` | Electronic occupation broadening that can stabilise metallic or near-metallic iterations | Is it reported as a numerical aid with its units? |
 | `GUESSP` | Reuses a previous density/wavefunction guess when the workflow supports it | Does the restart file belong to the same structure and method? |
 
 ### Smearing is not lattice temperature
 
-In CRYSTAL workflows, a smearing value is an electronic occupation parameter. It may be converted to an equivalent electronic temperature for reporting, but that value is not the physical temperature of the crystal. Keep the parameter, unit and reason in the calculation passport; do not describe it as the sample temperature.
+In CRYSTAL, smearing controls electronic occupations. It may be reported as an equivalent electronic temperature, but it is not the physical temperature of the crystal. Record the value, unit and reason; do not call it the sample temperature.
 
 ### Mixing changes numerical behaviour, not the scientific question
 
-Changing `FMIXING` can help an unstable iterative procedure reach a solution. It does not replace a convergence test and does not justify accepting an unconverged density. Compare the final energy and convergence status after the change.
+Changing `FMIXING` can help an unstable iteration reach a solution. It does not replace a convergence test. Compare the final energy and convergence status after the change.
 
 ## 🧪 A controlled recovery protocol
 
@@ -74,7 +74,7 @@ attempt_02: changed only [one control], reason [short explanation]
 attempt_03: changed only [one control], reason [short explanation]
 ```
 
-For every attempt, preserve the input, qsub script, output and scheduler log. Stop and revisit the structure or charge if the iterations show discontinuities, impossible energies or evidence that the wrong restart file was read.
+For every attempt, preserve the input, qsub script, output and scheduler log. Revisit the structure or charge if the iterations show discontinuities, impossible energies or the wrong restart file.
 
 ## ✅ SCF checkpoint
 

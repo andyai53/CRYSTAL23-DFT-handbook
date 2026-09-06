@@ -4,20 +4,20 @@ _Estimated time: 20 minutes | Difficulty: Beginner | Last verified: 2026-09-05_
 
 ---
 
-This page gives you the mental model needed to follow the rest of the handbook. You do not need to understand every keyword yet. You do need to know which files are inputs, which files are evidence, and what "finished" means.
+This page gives you the mental model for the rest of the handbook. You do not need to know every keyword yet. You do need to know which files are inputs, which files are evidence and what a finished calculation looks like.
 
 ## 🎯 Learning goals
 
 By the end of this page, you should be able to:
 
-- explain what a periodic DFT calculation is trying to solve;
+- explain what a periodic DFT calculation is solving;
 - distinguish SCF convergence from geometry convergence;
-- identify the files that must be preserved for a reproducible result; and
-- decide whether a calculation is ready for BAND, DOSS or ANBD.
+- identify the files that preserve a calculation's history; and
+- decide whether a result is ready for BAND, DOSS or ANBD.
 
 ## 🧱 The CRYSTAL23 mental model
 
-CRYSTAL represents a periodic solid using a repeating unit cell, a basis set and an electronic-structure method. It first solves the electronic problem for a fixed structure. During geometry optimisation, it then updates the cell and/or atomic coordinates and repeats the electronic calculation until the chosen force, displacement and energy criteria are met.[^1]
+CRYSTAL describes a solid with a repeating unit cell, a basis set and an electronic-structure method. It first solves the electronic problem for one fixed structure. During geometry optimisation, it updates the cell and/or atomic coordinates and repeats the electronic calculation until the selected force, displacement and energy criteria are met.[^1]
 
 ```mermaid
 flowchart TD
@@ -50,9 +50,9 @@ flowchart TD
 
 | State | What it means | Evidence to look for |
 | --- | --- | --- |
-| Job completed | The scheduler process stopped and produced an output file | Queue entry disappears; output and error logs exist |
-| SCF converged | The electronic density and energy met the SCF criteria | A clear SCF-convergence message and a sensible final energy |
-| Geometry converged | The structure met the optimisation criteria after repeated SCF cycles | A clear optimisation-convergence message, final forces and displacements |
+| Job completed | The scheduler process stopped and produced files | The queue entry ends and output/error logs exist |
+| SCF converged | The electronic density and energy met the SCF criteria | The output reports convergence and a final energy |
+| Geometry converged | The structure met the optimisation criteria after repeated SCF cycles | The output reports convergence, forces and displacements |
 
 > ⚠️ **Important:** A job can complete without being scientifically usable. Always check the output, not only the queue status.
 
@@ -62,12 +62,12 @@ File names vary between local scripts and cluster wrappers, but the roles are st
 
 | File or pattern | Role | Preserve it? |
 | --- | --- | --- |
-| `*.d12` | Main CRYSTAL input: structure, basis, Hamiltonian, k-points and SCF/optimisation settings | Yes |
-| `*.d3` | Properties input used by `properties` for BAND, DOSS, ANBD and related analyses | Yes |
-| `*.out` | Human-readable calculation output and the first place to inspect convergence | Yes |
-| `fort.9`, `fort.98` | Wavefunction/restart files needed by many properties calculations; exact use depends on the run and wrapper | Yes |
-| `*.f25`, `*.f98` or site-specific property files | Machine-readable property or wavefunction data produced by a particular calculation | Yes, if used by the analysis |
-| `*.qsub` | PBS submission script describing resources and execution commands | Yes |
+| `*.d12` | Main input: structure, basis, Hamiltonian, k-points and SCF/optimisation settings | Yes |
+| `*.d3` | Properties input for BAND, DOSS, ANBD and related analyses | Yes |
+| `*.out` | Human-readable output and the first place to check convergence | Yes |
+| `fort.9`, `fort.98` | Wavefunction/restart files used by many properties runs | Yes |
+| `*.f25`, `*.f98` or local property files | Machine-readable data produced by a particular run | Yes, when used by the analysis |
+| `*.qsub` | PBS resource request and execution commands | Yes |
 
 Do not assume that a file is interchangeable merely because its name looks similar. A BAND or DOSS calculation must use the wavefunction from the intended, converged parent calculation.
 
@@ -82,7 +82,7 @@ Before submitting a job, record these six items in a short calculation note:
 5. Expected output files
 6. The scientific question the calculation is meant to answer
 
-If you cannot fill in item 6, do not submit a large production job yet. Start with a small validation calculation or ask your supervisor which decision the run should support.
+If you cannot fill in item 6, do not submit a large production job. Start with a small validation calculation or ask which decision the run should support.
 
 ## 🚀 Next step
 
@@ -90,4 +90,4 @@ Continue to [Linux and PBS essentials](01-linux-and-pbs.md). It explains the ter
 
 ## References
 
-[^1]: CRYSTAL Solutions. (n.d.). *CRYSTAL properties tutorial*. https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
+[^1]: Dovesi, R., Erba, A., Orlando, R., et al. (2020). *The CRYSTAL code, 1976–2020 and beyond: a long story*. The Journal of Chemical Physics, 152, 204111. https://doi.org/10.1063/5.0004892

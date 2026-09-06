@@ -4,11 +4,11 @@ _Estimated time: 30 minutes | Difficulty: Beginner | Last verified: 2026-09-05_
 
 ---
 
-This page teaches the minimum cluster workflow needed to run CRYSTAL23 safely. You will learn how to move through directories, submit a PBS job, monitor it and identify the output that needs scientific inspection.
+This page teaches the small set of cluster actions used in every CRYSTAL23 run: move through directories, submit a PBS job, monitor it and find the output that needs inspection.
 
 ## 🖥️ What HPC and PBS mean
 
-**HPC** means *high-performance computing*: a shared collection of compute nodes used for jobs that are too large or too slow for a personal computer. **PBS** is the scheduler interface used to request resources and place a job in the queue. You submit a script with `qsub`; the scheduler decides when and where it runs; you inspect it with `qstat`.[^1]
+**HPC** means *high-performance computing*: shared compute nodes for jobs that are too large or too slow for a personal computer. **PBS** is the scheduler used to request resources and place jobs in a queue. Submit a script with `qsub`, then check it with `qstat`.[^1]
 
 ```mermaid
 sequenceDiagram
@@ -30,20 +30,20 @@ sequenceDiagram
     pbs-->>user: Job completes
 ```
 
-> 📌 **Rule:** Use the login node for editing, light inspection and submission. Run CRYSTAL23 on an allocated compute node through PBS unless your local HPC instructions explicitly say otherwise.
+> 📌 **Rule:** Use the login node for editing, light inspection and submission. Run CRYSTAL23 on a compute node allocated by PBS, unless your local HPC guide says otherwise.
 
 ## 📋 Prerequisites
 
 | Requirement | How to check | What success looks like |
 | --- | --- | --- |
-| Cluster account and login method | Follow your institution's HPC guide | You can open a shell on the login node |
+| Cluster account and login method | Follow your institution's HPC guide | A shell opens on the login node |
 | CRYSTAL23 access | Use the module or executable path supplied by your group | The command is available inside a test job |
 | PBS commands | `command -v qsub` and `command -v qstat` | Both commands return a path |
-| A validated training input | `ls examples/first_job` | The input and submission script are present |
+| A validated training input | Use the path supplied by your group | The input and submission script are present |
 
 ## 🔧 Essential terminal commands
 
-Run these commands one at a time:
+Run these commands one at a time. Replace `path/to/project` with your own project directory:
 
 ```bash
 pwd                 # print the current directory
@@ -75,7 +75,7 @@ project-name/
 
 ## 🚀 A generic PBS submission script
 
-The following is intentionally site-neutral. Replace the marked resource and executable lines with the configuration provided by your HPC administrator or research group.
+The following script is site-neutral. Replace the resource request and executable setup with the values provided by your HPC administrator or research group.
 
 ```bash
 #!/bin/bash
@@ -87,20 +87,20 @@ The following is intentionally site-neutral. Replace the marked resource and exe
 set -euo pipefail
 cd "$PBS_O_WORKDIR"
 
-# Replace this with your site's CRYSTAL23 setup.
+# Replace this setup and command with your group's approved template.
 # module load crystal23
 
 crystal < inputs/training.d12 > outputs/training.out
 ```
 
-Save it as `jobs/training.qsub`, create the output directory, and submit it from the project root:
+Confirm the executable line with your group before submitting. Save the approved script as `jobs/training.qsub`. From the project root, create the output directory and submit it:
 
 ```bash
 mkdir -p outputs logs
 qsub jobs/training.qsub
 ```
 
-**Expected output:** PBS returns a job identifier similar to `123456.server`. The exact format depends on the cluster.
+PBS returns a job identifier such as `123456.server`. The exact format depends on the cluster.
 
 ## 🔍 Monitor and inspect the job
 
@@ -113,10 +113,10 @@ grep -n "converg\|SCF\|ERROR" outputs/training.out
 
 | Observation | Interpretation | Next action |
 | --- | --- | --- |
-| Job is queued | PBS has accepted the request but resources are not available yet | Wait; do not resubmit repeatedly |
+| Job is queued | PBS accepted the request but resources are not available | Wait; do not resubmit repeatedly |
 | Job is running | The process has started | Inspect the output occasionally |
-| Job disappeared | It may have completed, failed or been deleted | Check output, error log and exit status |
-| Output stops during SCF | The calculation may be slow or stuck | Inspect the last iterations and scheduler log |
+| Job disappeared | It completed, failed or was deleted | Check the output, error log and exit status |
+| Output stops during SCF | The run may be slow or stuck | Inspect the last iterations and scheduler log |
 
 To stop a job that you have verified should not continue:
 
@@ -124,7 +124,7 @@ To stop a job that you have verified should not continue:
 qdel 123456.server
 ```
 
-Only delete the specific job ID you intend to stop. A deleted job is not a failed calculation record; keep its output and note why it was stopped.
+Delete only the job ID you intend to stop. Keep the output and record why the job was stopped.
 
 ## 🧪 Verification checklist
 
@@ -139,15 +139,15 @@ Only delete the specific job ID you intend to stop. A deleted job is not a faile
 
 ### `qsub: command not found`
 
-Your shell is not on the expected cluster or the scheduler environment is not loaded. Confirm the hostname and consult the local HPC instructions; do not install a second scheduler client inside the project.
+Your shell is not on the expected cluster, or the scheduler environment is not loaded. Confirm the hostname and consult the local HPC guide. Do not install a second scheduler client inside the project.
 
 ### `Unknown resource` or an invalid `select` line
 
-PBS resource names differ between sites. Copy a working resource request from your institution's documentation or a group-maintained template, then change only one resource at a time.
+PBS resource names differ between sites. Copy a working request from your institution's documentation or a group template, then change one resource at a time.
 
 ### The job completes but no useful output is present
 
-Check the working directory, executable setup, input path and scheduler error log. A zero-length or very short `.out` file is not evidence of a successful CRYSTAL23 run.
+Check the working directory, executable setup, input path and scheduler error log. A zero-length or very short `.out` file does not show that CRYSTAL23 ran successfully.
 
 ## 🚀 Next step
 

@@ -4,7 +4,7 @@ _Estimated time: 45 minutes | Difficulty: Intermediate | Last verified: 2026-09-
 
 ---
 
-A convergence test is a controlled comparison, not a single "best" calculation. Change one numerical or modelling parameter at a time, measure the quantity that matters for your scientific question, and record the cost of the more accurate choice.
+A convergence test is a controlled comparison. Change one numerical or modelling parameter at a time, measure a quantity relevant to your question and record the extra cost.
 
 ## 🎯 Learning goals
 
@@ -48,7 +48,7 @@ flowchart LR
 | Slab thickness | Increasing layer counts | Centre-layer structure and surface energy/property |
 | Smearing or mixing | Several documented values | SCF stability and final electronic result |
 
-The parameter levels must be appropriate to the model. Do not compare two runs that also changed the functional, basis, geometry, charge or k-point path unless the purpose is explicitly a method comparison.
+Choose levels that suit the model. Keep the functional, basis, geometry, charge and k-point path fixed unless you are explicitly comparing methods.
 
 ## 🧮 Use a decision table
 
@@ -58,7 +58,7 @@ The parameter levels must be appropriate to the model. Do not compare two runs t
 | 02 | [parameter = level 2] | [value] | [delta] | [time] | Keep or continue |
 | 03 | [parameter = level 3] | [value] | [delta] | [time] | Accept or reject |
 
-"Converged" means stable with respect to the selected observable and tolerance. It does not mean that every possible property is insensitive to the same setting. State what was tested and what was not tested.
+"Converged" means stable for the selected observable and tolerance. It does not mean that every property is insensitive to the same setting. State what you tested and what you did not test.
 
 ## 📝 Calculation passport entry
 
@@ -75,7 +75,7 @@ Evidence: [input/output/plot paths]
 Known limitation: [what was not tested]
 ```
 
-This is where project management becomes scientific evidence: another student can reproduce the comparison and understand why the production setting was selected.
+This note lets another student reproduce the comparison and understand why you selected the production setting.
 
 ## 🚀 Next step
 

@@ -4,7 +4,7 @@ _Estimated time: 35 minutes | Difficulty: Beginner to intermediate | Last verifi
 
 ---
 
-Geometry optimisation searches for a lower-force structure under the constraints defined by the input. It is not the same as running a single SCF calculation: every optimisation step needs a reliable electronic solution before the geometry can be updated.
+Geometry optimisation searches for a structure that meets the force, displacement and energy criteria set in the input. Each optimisation step needs a converged electronic solution before the geometry can be updated.
 
 ## 🎯 Learning goals
 
@@ -45,7 +45,7 @@ flowchart TD
 | Cell optimisation | Lattice parameters and often atomic positions | Bulk equilibrium structure |
 | Constrained slab optimisation | Selected coordinates are fixed or restricted | Preserve a bulk-like centre while relaxing the surface |
 
-The keyword and constraint syntax is method-specific. The important scientific record is the choice itself: state whether the cell, atoms or both were allowed to relax, and explain any frozen layers or symmetry restrictions.[^1]
+The keyword and constraint syntax depends on the calculation. In your record, state whether the cell, atoms or both could relax. Also record frozen layers and symmetry restrictions.[^1]
 
 ## 🔍 Inspect the final output
 
@@ -67,7 +67,7 @@ Maximum displacement: [value and units as printed]
 Geometry status: converged / not converged
 ```
 
-The phrase `OPT END - CONVERGED` is a common CRYSTAL output marker, but the surrounding force and displacement values are the evidence. Do not accept a structure solely because the process reached its walltime or because the energy decreased once.
+`OPT END - CONVERGED` is a common CRYSTAL output marker. Read the surrounding force and displacement values as well. A job reaching walltime or lowering its energy once does not prove that the geometry converged.
 
 ## ⚠️ Slab-specific checks
 
@@ -77,7 +77,7 @@ For a slab or surface model, check all of the following before using the relaxed
 - The intended number of layers is present after optimisation
 - Frozen or constrained atoms were applied to the intended region
 - The central layers remain sufficiently bulk-like for the scientific question
-- The final surface geometry is not an artefact of an unconverged SCF step
+- The final surface geometry does not come from an unconverged SCF step
 
 ## ✅ Geometry checkpoint
 
