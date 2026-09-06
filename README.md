@@ -6,7 +6,9 @@ _A practical onboarding guide for reproducible computational research with CRYST
 
 This handbook is for a student who is new to Linux, HPC and periodic DFT. It follows one complete workflow: prepare a calculation, submit it through PBS, check that it converged, and then analyse properties such as BAND, DOSS and ANBD.
 
-It complements the [official CRYSTAL properties tutorial][crystal-properties]. Use that tutorial when you need the exact keyword syntax. Use this handbook when you need to decide what to run, how to check it, how to inspect a plot and how to leave a calculation that someone else can reproduce.[^1]
+It complements the [official CRYSTAL properties tutorial][crystal-properties]. Use that tutorial when you need the exact keyword syntax. Use this handbook when you need to decide what to run, how to check it, how to inspect a plot and how to leave a calculation that someone else can reproduce.[^1] If you are working off campus, start with Imperial's [Unified Access guide][unified-access]. For basis-set definitions and element-specific options, use the [CRYSTAL Basis Sets Library][basis-sets].
+
+Each page follows a practical teaching pattern: explain the idea, give a small task, show what success looks like and keep the calculation record beside the lesson.
 
 ## 📚 Start here
 
@@ -88,6 +90,8 @@ Use the [CRYSTAL properties tutorial][crystal-properties] for the detailed synta
 
 [crystal-properties]: https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
 [crysplot]: https://crysplot.crystalsolutions.eu/index.html
+[unified-access]: https://www.imperial.ac.uk/admin-services/ict/self-service/connect-communicate/remote-access/unified-access/
+[basis-sets]: https://www.crystal.unito.it/basis_sets.html
 
 [^1]: CRYSTAL Solutions. (n.d.). *Properties tutorial*. https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
 [^2]: Dovesi, R., Erba, A., Orlando, R., et al. (2020). *The CRYSTAL code, 1976–2020 and beyond: a long story*. The Journal of Chemical Physics, 152, 204111. https://doi.org/10.1063/5.0004892
