@@ -4,9 +4,9 @@ _A practical onboarding guide for reproducible computational research with CRYST
 
 ---
 
-This handbook is written for a student who has never used a Linux cluster or a periodic-DFT code. It follows one complete workflow: prepare a calculation, submit it to a PBS-managed cluster, decide whether it really converged, and only then analyse properties such as BAND, DOSS and ANBD.
+This handbook is for a student who is new to Linux, HPC and periodic DFT. It follows one complete workflow: prepare a calculation, submit it through PBS, check that it converged, and then analyse properties such as BAND, DOSS and ANBD.
 
-It is deliberately different from the official CRYSTAL tutorial. The official material is the authoritative reference for keywords and property calculations; this handbook adds the operational context that a new student usually needs first: file organisation, job submission, checkpoints, failure recovery, provenance and handover.[^1]
+It complements the [official CRYSTAL properties tutorial][crystal-properties]. Use that tutorial when you need the exact keyword syntax. Use this handbook when you need to decide what to run, how to check it, how to inspect a plot and how to leave a calculation that someone else can reproduce.[^1]
 
 ## 📚 Start here
 
@@ -14,9 +14,9 @@ Choose the route that matches your goal:
 
 | Goal | Start with | Outcome |
 | --- | --- | --- |
-| I have never used a cluster | [Before you run anything](docs/00-before-you-run.md) | Understand what CRYSTAL files and convergence states mean |
+| I have never used a cluster | [Before you run anything](docs/00-before-you-run.md) | Build the right mental model before running code |
 | I need to submit a job | [Linux and PBS essentials](docs/01-linux-and-pbs.md) | Submit, monitor and inspect a first job |
-| I want to run BAND or DOS | [Properties overview](docs/07-properties-overview.md) | Build properties inputs from a trusted wavefunction |
+| I want to run BAND or DOS | [Properties overview](docs/07-properties-overview.md) | Start from a trusted wavefunction and keep the analysis traceable |
 | I am taking over an existing project | Project organisation *(under construction)* | Trace every figure back to its input and output |
 
 ## 🧭 The learning path
@@ -56,13 +56,13 @@ flowchart LR
 
 ## 🔒 Scope and safety
 
-This handbook uses generic PBS examples. Cluster resource names, module names, executable paths and wall-time limits are site-specific; replace the marked placeholders with the values supplied by your local HPC service. Never publish credentials, private paths, unpublished structures or raw data that your supervisor has not approved for release.
+This handbook uses generic PBS examples. Resource names, module names, executable paths and wall-time limits are site-specific. Replace marked placeholders with values from your local HPC service. Never publish credentials, private paths, unpublished structures or raw data without your supervisor's approval.
 
-The examples teach a workflow, not a universal production protocol. A successful command is not evidence that a model is physically adequate. Keep the input, output, convergence evidence and scientific justification together.
+The examples teach a workflow, not a universal production protocol. A successful command is not evidence that a model is physically adequate. Keep the input, output, convergence evidence and scientific reason for each choice together.
 
 ## 🗂️ Repository map
 
-The entries below are clickable:
+The entries below are clickable. GitHub does not make Markdown links inside a fenced `text` code block clickable, so the repository map is written as a nested list instead:
 
 - [`README.md`](./README.md) — project entry page
 - [`docs/`](./docs/) — step-by-step tutorials
@@ -78,10 +78,16 @@ The entries below are clickable:
   - [`09-density-of-states.md`](./docs/09-density-of-states.md)
   - [`index.md`](./docs/index.md) — GitHub Pages entry page
 
-Planned modules after `09` are bonding analysis, bulk and slab workflows, the surface case study, project management and troubleshooting. They will be added with tested examples rather than empty placeholder pages.
+Planned directories such as `examples/`, `templates/` and `references/` will be added after their contents are validated. They are intentionally not linked yet, so the map does not point to empty or nonexistent paths.
+
+Later modules will cover bonding analysis, bulk and slab workflows, the surface case study, project management and troubleshooting. They will be added with tested examples rather than empty placeholder pages.
 
 ## 📖 Official references
 
-The official CRYSTAL properties tutorial remains the source of truth for the detailed syntax of PPAN, ECHG, BAND, DOSS, COOP and COHP.[^1] This handbook links back to the official documentation at the point where a reader needs the complete keyword reference.
+Use the [CRYSTAL properties tutorial][crystal-properties] for the detailed syntax of PPAN, ECHG, BAND, DOSS, COOP and COHP. Use [CrySPLOT][crysplot] to inspect or plot supported CRYSTAL output files. For a citable overview of the code and its development, see Dovesi et al.[^2]
+
+[crystal-properties]: https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
+[crysplot]: https://crysplot.crystalsolutions.eu/index.html
 
 [^1]: CRYSTAL Solutions. (n.d.). *Properties tutorial*. https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
+[^2]: Dovesi, R., Erba, A., Orlando, R., et al. (2020). *The CRYSTAL code, 1976–2020 and beyond: a long story*. The Journal of Chemical Physics, 152, 204111. https://doi.org/10.1063/5.0004892
