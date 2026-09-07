@@ -6,6 +6,36 @@ This project checked SCF completion from the CRYSTAL output line, not from a gue
 
 SCF is the electronic part of the calculation. CRYSTAL repeats the electronic solution until the energy criterion is satisfied for the current structure. During a geometry optimisation, this electronic check is repeated at each geometry step.
 
+## Check a completed run in order
+
+Use this flow when a job has left the queue. It separates the scheduler status, SCF completion and geometry completion, which answer different questions.
+
+```mermaid
+flowchart TB
+    accTitle: Completed run checks
+    accDescr: Check the CRYSTAL output for an SCF completion line, then check the optimisation result only when the input requested geometry optimisation.
+
+    job_done([Job has left queue]) --> read_output[Read the CRYSTAL output]
+    read_output --> scf_found{SCF completion line found?}
+    scf_found -->|No| unclear[Record status as unclear]
+    unclear --> guidance([Keep files and seek guidance])
+    scf_found -->|Yes| geometry_requested{Input requests OPTGEOM?}
+    geometry_requested -->|No| parent_ready([Parent calculation ready for next check])
+    geometry_requested -->|Yes| opt_found{OPT END - CONVERGED found?}
+    opt_found -->|Yes| parent_ready
+    opt_found -->|No| unclear
+
+    classDef action fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    classDef warning fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    classDef result fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+
+    class read_output action
+    class scf_found,geometry_requested,opt_found decision
+    class unclear,guidance warning
+    class job_done,parent_ready result
+```
+
 ## The project check
 
 Run the command for the file you are checking:

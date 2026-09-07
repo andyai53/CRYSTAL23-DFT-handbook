@@ -9,6 +9,28 @@ This handbook is for students starting CRYSTAL23 work on CX3. Follow the workflo
 
 ## Workflow
 
+```mermaid
+flowchart LR
+    accTitle: CRYSTAL23 learning workflow
+    accDescr: A first calculation moves from planning and input preparation through submission and checking to optimisation or properties analysis.
+
+    plan([Plan calculation]) --> cluster[Work on CX3]
+    cluster --> input[Prepare input]
+    input --> submit[Submit job]
+    submit --> inspect[Read input and output]
+    inspect --> scf[Check SCF]
+    scf --> geometry[Check geometry]
+    geometry --> version[Record version]
+    version --> properties[Run properties]
+    properties --> analyse([Analyse BAND or DOSS])
+
+    classDef action fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    classDef result fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+
+    class cluster,input,submit,inspect,scf,geometry,version,properties action
+    class plan,analyse result
+```
+
 | Stage | Page | Record produced |
 | --- | --- | --- |
 | Plan the calculation | [Plan a calculation and keep its record](00-before-you-run.md) | Calculation name and purpose |

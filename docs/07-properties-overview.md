@@ -18,20 +18,31 @@ The names in this command are examples. Use your parent calculation's base name.
 
 ## Parent-property relationship
 
-```text
-ATOMOPT1.d12
-ATOMOPT1.out
-ATOMOPT1.f9
-ATOMOPT1.f98
-        |
-        +--> ATOMOPT1_BAND.d3
-        |    ATOMOPT1_BAND.BAND
-        |
-        +--> ATOMOPT1_DOSS.d3
-             ATOMOPT1_DOSS.DOSS
+```mermaid
+flowchart LR
+    accTitle: Parent and property files
+    accDescr: A checked main calculation provides its output and wavefunction files to separate BAND and DOSS property inputs and data files.
+
+    parent[ATOMOPT1 d12, out, f9 and f98] --> band_input[ATOMOPT1 BAND d3]
+    parent --> doss_input[ATOMOPT1 DOSS d3]
+    band_input --> band_data([BAND out, BAND and f25])
+    doss_input --> doss_data([DOSS out, DOSS and f25])
+
+    classDef parent_style fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#3b0764
+    classDef input_style fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    classDef result fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+
+    class parent parent_style
+    class band_input,doss_input input_style
+    class band_data,doss_data result
 ```
 
 The main CRYSTAL calculation is described by a `.d12` input; it produces the electronic structure and wavefunction. A properties input is a `.d3` file; it asks CRYSTAL to analyse that existing wavefunction and write a new, named result. This is why property files should carry both their own purpose and a visible connection to the parent.
+
+| Property | Main question | Files to preserve with the plot |
+| --- | --- | --- |
+| BAND | How do state energies vary along the selected reciprocal-space path? | `.d3`, `.out`, `.BAND`, `.f25` and parent name |
+| DOSS | Which selected states occur across the chosen energy range? | `.d3`, `.out`, `.DOSS`, `.f25`, projection groups and parent name |
 
 ## Prepare the properties qsub file
 

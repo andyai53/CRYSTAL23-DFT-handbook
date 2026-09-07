@@ -49,6 +49,31 @@ This is why `OPT0` and `ATOMOPT0` are recorded as different routes. `OPT0.d12` c
 
 `ATOMDISP` is different again. It supplies explicit atomic displacements for a new input, as seen in `ATOMOPT1` and `OPT1`; it is not another name for `ATOMONLY`.
 
+```mermaid
+flowchart TB
+    accTitle: Geometry optimisation choices
+    accDescr: Select whether the cell should remain fixed before adding ATOMONLY, and treat ATOMDISP only as a changed starting geometry.
+
+    question{Should the cell remain fixed?} -->|Yes| atom_only[Use OPTGEOM with ATOMONLY]
+    question -->|No or unsure| general_opt[Check the general OPTGEOM setup]
+    atom_only --> start_geometry{Need a changed starting geometry?}
+    general_opt --> start_geometry
+    start_geometry -->|Yes| atom_disp[Add ATOMDISP with a recorded reason]
+    start_geometry -->|No| review_input[Review the complete input]
+    atom_disp --> review_input
+    review_input --> run_check([Run and check SCF plus optimisation completion])
+
+    classDef action fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    classDef result fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+
+    class atom_only,general_opt,atom_disp,review_input action
+    class question,start_geometry decision
+    class run_check result
+```
+
+Read the two decisions independently. `ATOMONLY` controls what may relax during optimisation. `ATOMDISP` changes the starting coordinates before that optimisation begins.
+
 ## Check the output
 
 First check SCF completion:
