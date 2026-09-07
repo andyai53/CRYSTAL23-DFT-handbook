@@ -1,95 +1,69 @@
-# SCF convergence
+# Checking SCF completion
 
-_Estimated time: 40 minutes | Difficulty: Beginner to intermediate | Last verified: 2026-09-05_
+This project checked SCF completion from the CRYSTAL output line, not from a guessed collection of search terms.
 
----
+## What SCF means here
 
-The self-consistent-field (SCF) procedure updates the electron density until the input and calculated densities agree to the requested threshold. Reaching the maximum number of cycles is not convergence, even when the last few energies look smooth.
+SCF is the electronic part of the calculation. CRYSTAL repeats the electronic solution until the energy criterion is satisfied for the current structure. During a geometry optimisation, this electronic check is repeated at each geometry step.
 
-## 🎯 Learning goals
+## The project check
 
-- Recognise the difference between an SCF failure and a slow calculation
-- Change one numerical control at a time and keep an audit trail
-- Use smearing and mixing deliberately for metallic or near-metallic systems
-- Decide when to stop recovering a run and revisit the model
+Run the command for the file you are checking:
 
-## 🔄 The SCF decision loop
-
-```mermaid
-flowchart TD
-    accTitle: SCF Recovery Loop
-    accDescr: The SCF workflow checks convergence first, then separates slow but stable runs from oscillatory or divergent runs before selecting a limited recovery action.
-
-    start[Start SCF] --> check{Converged?}
-    check -->|Yes| accept[Record energy and settings]
-    check -->|No| pattern{What does the iteration pattern show?}
-    pattern -->|Stable but slow| cycles[Review threshold and cycle limit]
-    pattern -->|Oscillating| mixing[Review density mixing]
-    pattern -->|Metallic occupation changes| smear[Review electronic smearing]
-    pattern -->|Abrupt or nonsensical| model[Check structure, charge and input]
-    cycles --> rerun[Make one documented change]
-    mixing --> rerun
-    smear --> rerun
-    model --> rerun
-    rerun --> start
-    accept --> stop([Use for the next workflow stage])
-
-    classDef primary fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
-    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
-    classDef danger fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
-
-    class start,cycles,mixing,smear,model,rerun primary
-    class check,pattern decision
-    class accept,stop success
+```bash
+grep "SCF E" OPT0.out
 ```
 
-## 🧰 Controls you will encounter
+For the atomic optimisation:
 
-The syntax and defaults depend on the CRYSTAL version and workflow. Check the [official CRYSTAL documentation](https://www.crystal.unito.it/documentation.html) before changing a production input.[^1]
+```bash
+grep "SCF E" ATOMOPT0.out
+```
 
-| Control | Practical meaning | Safe first question |
-| --- | --- | --- |
-| `TOLDEE` | Energy threshold used in the SCF test | Is the threshold appropriate for this stage? |
-| `MAXCYCLE` | Maximum number of SCF iterations allowed | Is the run genuinely converging, or only consuming more cycles? |
-| `FMIXING` | Fraction used when mixing the new density with the previous density | Is the density oscillating and would gentler mixing help? |
-| `SMEAR` | Electronic occupation broadening that can stabilise metallic or near-metallic iterations | Is it reported as a numerical aid with its units? |
-| `GUESSP` | Reuses a previous density/wavefunction guess when the workflow supports it | Does the restart file belong to the same structure and method? |
-
-### Smearing is not lattice temperature
-
-In CRYSTAL, smearing controls electronic occupations. It may be reported as an equivalent electronic temperature, but it is not the physical temperature of the crystal. Record the value, unit and reason; do not call it the sample temperature.
-
-### Mixing changes numerical behaviour, not the scientific question
-
-Changing `FMIXING` can help an unstable iteration reach a solution. It does not replace a convergence test. Compare the final energy and convergence status after the change.
-
-## 🧪 A controlled recovery protocol
-
-When a run fails, create a new attempt rather than overwriting the original evidence:
+A successful SCF step contains:
 
 ```text
-attempt_01: original input, failed after [N] cycles
-attempt_02: changed only [one control], reason [short explanation]
-attempt_03: changed only [one control], reason [short explanation]
+== SCF ENDED - CONVERGENCE ON ENERGY E(AU) ...
 ```
 
-For every attempt, preserve the input, qsub script, output and scheduler log. Revisit the structure or charge if the iterations show discontinuities, impossible energies or the wrong restart file.
+The output also reports the number of SCF cycles. An optimisation can contain several SCF completion lines, one for each geometry step. Once `OPT END - CONVERGED` has also been found, record the energy and cycle count from the final SCF step.
 
-## ✅ SCF checkpoint
+## What this check does not prove
 
-Accept an SCF result only when all of the following are true:
+SCF convergence means that the electronic calculation reached its energy criterion for the current structure. It does not by itself prove that:
 
-- The output contains an explicit convergence indication
-- The final energy is present and numerically plausible for the calculation family
-- The run did not stop at `MAXCYCLE`
-- The input and restart files are the intended pair
-- The recovery log explains any non-default smearing or mixing choice
+- the geometry optimisation converged;
+- the input used the intended structure;
+- a properties calculation used the intended parent; or
+- the result answers the research question.
 
-## 🚀 Next step
+Check each of those separately.
 
-After SCF convergence is reliable, continue to [Geometry optimisation](05-geometry-optimisation.md). Geometry optimisation adds a second convergence layer and should be checked separately.
+## A short record
 
-## References
+```text
+Calculation: OPT0
+Output: OPT0.out
+SCF status: SCF ENDED - CONVERGENCE ON ENERGY
+Final energy: [copy exactly from the output]
+SCF cycles: [copy exactly from the output]
+Geometry status: [check separately]
+```
 
-[^1]: CRYSTAL Solutions. (n.d.). *CRYSTAL documentation*. https://www.crystal.unito.it/documentation.html
+## If the line is missing
+
+Do not replace this check with a broader, unverified command. Open the output:
+
+```bash
+less OPT0.out
+```
+
+Search inside `less` with `/SCF E`, press `n` for the next match and `q` to quit. Keep the output and scheduler files for diagnosis. The recovery procedure for this project has not yet been formalised in this handbook.
+
+## Checkpoint
+
+Do not proceed to a geometry or properties page until you can locate the SCF completion line and, for an optimisation, its final `OPT END - CONVERGED` line. If the SCF line is missing, record the run as “status unclear” rather than “converged”.
+
+## Next
+
+Continue to [Managing geometry optimisation](05-geometry-optimisation.md).

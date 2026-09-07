@@ -1,94 +1,80 @@
 # Band structure
 
-_Estimated time: 40 minutes | Difficulty: Intermediate | Syntax source: official tutorial_
+A band-structure calculation shows how electronic-state energies change along a chosen path in reciprocal space. It can help you see dispersion, band width and the position of occupied and unoccupied bands. It is a property of a checked parent wavefunction, not a separate geometry optimisation.
 
----
+## What you will learn
 
-A band structure shows how calculated electronic energies change along a chosen path through reciprocal space. The path is part of the calculation, so a plausible-looking plot is not enough: record the path and check that it matches the model.
+You will learn how to prepare a BAND property from a converged parent, which output files to retain, and what can and cannot be concluded from the resulting plot.
 
-## 🎯 Learning goals
-
-By the end of this page, you should be able to:
-
-- distinguish a reciprocal-space path from a DOS k-point mesh;
-- choose whether the bulk or slab convention applies;
-- record the path, number of points and energy reference; and
-- describe a gap or crossing without claiming more than the calculation shows.
-
-## ✅ Check the parent calculation first
-
-Start a BAND run only when all of these are true:
-
-- [ ] The parent SCF calculation is converged
-- [ ] The geometry is converged, if it was optimised
-- [ ] The restart or wavefunction file belongs to that parent calculation
-- [ ] The dimensionality is clear: three-dimensional bulk or two-dimensional slab
-- [ ] The scientific question needs a band path
-
-If any box is unchecked, return to [Properties overview](07-properties-overview.md).
-
-## 🧭 Choose and record the path
-
-The path joins selected high-symmetry points in the Brillouin zone. A bulk cell and a slab do not necessarily use the same path. Before editing a `.d3` file, write this short record:
+## The project input
 
 ```text
-Model: [bulk / slab]
-Reciprocal-space convention: [source or group convention]
-Path: [ordered list of points]
-Points between labels: [number]
-Energy window: [range and units]
-Reference energy: [Fermi level or other stated reference]
-Reason for this path: [one sentence]
+ATOMOPT1_BAND.d3
+
+NEWK
+[NEWK settings]
+BAND
+2D slab band structure around Fermi level
+[band range and path settings]
+[reciprocal-space path]
+END
 ```
 
-Use the [CRYSTAL properties tutorial](https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut) for the exact BAND input syntax.[^1] This handbook supplies the checks around the syntax; it does not replace the version-specific reference.
+The input records a two-dimensional slab path and the band range used for this plot. The selected path determines the plotted route through reciprocal space, so it must be retained with the figure. Read the [official properties tutorial](https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut) before changing numerical fields; the syntax and suitable path depend on the system.
 
-## 🧪 Run one BAND calculation
+The project supervision notes also recommend selected sections of Hoffmann's [How Chemistry and Physics Meet in the Solid State](https://doi.org/10.1002/anie.198708461) for the concepts behind Bloch functions, k-space, band structures, band width and density of states.
 
-Keep the properties run separate from the parent calculation:
+## Prepare and submit
 
-1. Copy the matching restart files into a new properties directory.
-2. Copy a working local BAND template.
-3. Change only the path, point count and energy window needed for this figure.
-4. Submit the properties job through the local PBS wrapper.
-5. Keep the `.d3`, submission script, output and generated data together.
+Confirm that the parent files exist:
 
-Do not change the parent Hamiltonian, basis set or geometry while preparing a BAND run. If those choices change, create a new parent calculation and record it as a separate branch.
+```bash
+ls ATOMOPT1.f9 ATOMOPT1.f98 ATOMOPT1_BAND.d3
+```
 
-## 🔍 Inspect the output and plot
-
-Before looking at the plot, check the output for errors and confirm that the requested path was accepted. Then use [CrySPLOT](https://crysplot.crystalsolutions.eu/index.html) to inspect supported CRYSTAL data files.[^2]
-
-Check the following items in the plot:
-
-| Item | What to check |
-| --- | --- |
-| Horizontal axis | Labels appear in the requested order and are separated at the correct points |
-| Vertical axis | Units and reference energy are stated, for example `E - E_F (eV)` |
-| Energy range | The window contains the feature you are discussing |
-| Bands | Lines are continuous and do not stop because of a parsing or export error |
-| Comparison | Bulk and slab plots use compatible conventions before you compare them |
-
-> 📌 **Plotting is the last step:** CrySPLOT displays the data supplied to it. It does not prove that the parent wavefunction converged or that the path is physically appropriate.
-
-## 🧠 What the plot can support
-
-A band plot can support statements about features along the selected path, such as a visible crossing or a gap between the highest occupied and lowest unoccupied bands on that path. It cannot, by itself, establish transport, device performance or a complete band gap if the path does not sample the relevant extrema.
-
-Write the interpretation next to the figure:
+The properties command in the working qsub file names both the property task and its parent:
 
 ```text
-Feature: [crossing, gap, flat band, or other feature]
-Where: [path segment and energy]
-Evidence: [data file and figure name]
-Limit: [what this path cannot establish]
+/rds/.../runpropP ATOMOPT1_BAND ATOMOPT1
 ```
 
-## 🚀 Next step
+After checking the edited qsub file, submit it:
 
-Continue to [Density of states](09-density-of-states.md) to learn how total and projected states complement a band plot.
+```bash
+qsub ATOMOPT1.qsub
+```
 
-## References
+```bash
+qstat -u $USER
+```
 
-[^1]: CRYSTAL Solutions. (n.d.). *Properties tutorial*. https://tutorials.crystalsolutions.eu/tutorial.html?td=properties&tf=properties_tut
-[^2]: CRYSTAL Solutions. (n.d.). *CrySPLOT*. https://crysplot.crystalsolutions.eu/index.html
+## Check the result
+
+The completed output reported:
+
+```text
+TOP OF VALENCE BANDS ...
+BOTTOM OF VIRTUAL BANDS ...
+INDIRECT ENERGY BAND GAP: ...
+* BAND STRUCTURE *
+```
+
+Locate these lines in the actual output:
+
+```bash
+grep "BAND" ATOMOPT1_BAND.out
+```
+
+Then open the output around the reported lines with `less`. Retain `ATOMOPT1_BAND.BAND` and `ATOMOPT1_BAND.f25` as the data files used for plotting.
+
+## Plot and interpret
+
+Open the supported BAND data in [CrySPLOT](https://crysplot.crystalsolutions.eu/index.html). Keep the original `.d3`, `.out`, `.BAND` and `.f25` files with the exported figure. The plot is derived from the selected path: a feature absent from that path may still occur elsewhere in reciprocal space. Read the reported valence-band top, virtual-band bottom and gap in the output before assigning a label to the plot.
+
+## Checkpoint
+
+Before sharing a band plot, record the parent calculation, BAND input, reciprocal-space path, output filename and the reported gap statement. This gives another student enough information to reproduce the plot or check its interpretation.
+
+## Next
+
+Continue to [Density of states](09-density-of-states.md).

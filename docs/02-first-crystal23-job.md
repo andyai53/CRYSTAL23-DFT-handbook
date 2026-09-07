@@ -1,99 +1,125 @@
-# Your first CRYSTAL23 job
+# Creating and submitting a calculation
 
-_Estimated time: 45 minutes | Difficulty: Beginner | Local example required_
+This page shows how to turn an existing CRYSTAL input into a traceable CX3 job.
 
----
+## What you will learn
 
-This is the first complete run. Use a small input that your group has already tested. The aim is to learn the workflow, not to start a production calculation.
+You will make a working copy of an input, inspect the generated qsub file, submit one job and record enough information for another student to find the same result.
 
-## 🎯 Learning goals
-
-By the end of this page, you should be able to:
-
-- copy an approved input without changing the source example;
-- submit one job through PBS;
-- follow the output while the job runs;
-- find the final SCF energy and convergence message; and
-- record the run so that another student can repeat it.
-
-## 📦 Before you start
-
-Ask your supervisor or group for these two files:
-
-| File | Purpose |
-| --- | --- |
-| A small, tested `*.d12` input | Training calculation with a known expected outcome |
-| A working `*.qsub` script | Local PBS resources and CRYSTAL23 executable setup |
-
-Do not use a large Ti2C/Ti3C2 production model for this exercise. A small training system makes it easier to tell a cluster problem from a model or input problem.
-
-> ⚠️ **Do not guess the input:** This repository leaves the example path open until the group has approved and tested the exact files. A first-job tutorial should never present an untested calculation as a copy-and-run example.
-
-## 🗂️ Create a clean run directory
-
-Run the following from the project root. Replace `/path/to/approved-example` with the directory supplied by your group:
+## 1. Go to the calculation directory
 
 ```bash
-mkdir -p training/first_job/{inputs,jobs,outputs,logs,notes}
-cp /path/to/approved-example/training.d12 training/first_job/inputs/
-cp /path/to/approved-example/training.qsub training/first_job/jobs/
-cd training/first_job
+cd /path/to/project
+pwd
+ls -rtl
 ```
 
-Open the copied script and check its paths:
+Check the printed path before editing or submitting anything.
+
+## 2. Create the next input
+
+The project notes record a first calculation created from an existing LiF input. Keep the source and make a new working file:
 
 ```bash
-less jobs/training.qsub
+cp lif.d12 HF.d12
 ```
 
-The script should read `inputs/training.d12` and write the output to `outputs/training.out`, or use paths that are clearly equivalent. Do not edit the source example in place.
-
-## 🚀 Submit and monitor the job
-
-Submit from the directory that contains `inputs/`, `jobs/` and `outputs/`:
+Edit the copy:
 
 ```bash
-qsub jobs/training.qsub
-qstat -u "$USER"
+vi HF.d12
 ```
 
-PBS returns a job identifier. Keep it in your notes. While the job is running, inspect the output occasionally:
+Compare it with its source:
 
 ```bash
-grep -n "SCF\|converg\|ERROR" outputs/training.out
-tail -n 40 outputs/training.out
+diff lif.d12 HF.d12
 ```
 
-The output may be empty while the job is waiting for a node. That is normal. Do not resubmit just because the file has not grown yet.
+The difference should match the purpose of the new calculation. If several unrelated sections changed, stop and check the input before submission.
 
-## ✅ Check the result
+## 3. Submit with `qcry23`
 
-When the job leaves the queue, inspect the output and scheduler logs. A successful first run must pass all four checks:
+```bash
+qcry23 HF.d12 24 1:00
+```
 
-- the output is not empty or truncated at startup;
-- the final SCF block reports convergence;
-- a final energy is present; and
-- the job did not stop at `MAXCYCLE` or an error message.
+This command is the recorded small-job example. In the completed project, other runs produced matching qsub files with different resource requests. The resource values are part of the calculation record, not universal defaults.
 
-Record the result in `notes/first-run.md`:
+Inspect the generated script:
+
+```bash
+cat HF.qsub
+```
+
+The important links are:
 
 ```text
-Input: inputs/training.d12
-PBS script: jobs/training.qsub
-PBS job ID: [copy the ID]
-Output: outputs/training.out
-SCF status: [converged / not converged]
-Final energy: [copy the value and units as printed]
-Problems or warnings: [none, or describe them]
-Next action: [continue / ask for help / diagnose]
+#PBS -N HF
+...
+runcryP HF
 ```
 
-> 📌 **Checkpoint:** Before moving on, you should be able to answer which input ran, which PBS job ID it used, where the convergence message appears and which files must be kept.
+The PBS job name, executable argument and `.d12` base name should agree.
 
-## 🚫 If the run fails
+## 4. Record the PBS job
 
-Keep the failed input, script, output and scheduler log. Write one sentence explaining what happened. Then return to [Linux and PBS essentials](01-linux-and-pbs.md) or [SCF convergence](04-scf-convergence.md). Do not overwrite the only copy and do not change several controls at once.
+```bash
+qstat -u $USER
+```
 
-## 🚀 Next step
+Record the job ID. The finished calculation may contain scheduler files such as:
 
-Continue to [Reading CRYSTAL23 input and output](03-reading-input-and-output.md). You will learn what each input block controls and how to read an output in a fixed order.
+```text
+HF.o1234567
+HF.e1234567
+```
+
+`1234567` is an example job ID. Replace it with the number returned by PBS. These names connect the scheduler record to the submitted calculation.
+
+## 5. Check the returned files
+
+After the job leaves the queue:
+
+```bash
+ls -rtl
+```
+
+```bash
+ls HF*
+```
+
+For the completed optimisation, the file set included `.d12`, `.qsub`, `.out`, scheduler logs, wavefunction files and structure outputs. The exact set depends on the calculation.
+
+Read the PBS error file if it contains text:
+
+```bash
+cat HF.e1234567
+```
+
+Use the actual job number in the filename.
+
+Then check the CRYSTAL output using the procedures in the next two pages. A job leaving the queue does not prove that the calculation converged.
+
+## Checkpoint
+
+Before continuing, your directory should contain the input, qsub file, scheduler record and CRYSTAL output. You should also know the job ID and be able to state whether the input was a new version of an earlier calculation.
+
+## Submission record
+
+Keep this information with the calculation:
+
+```text
+Calculation:
+Parent input:
+Change made:
+Submission command:
+PBS job ID:
+CRYSTAL output:
+Status:
+Next calculation:
+```
+
+## Next
+
+Continue to [Reading a CRYSTAL23 input and output](03-reading-input-and-output.md).

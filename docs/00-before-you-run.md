@@ -1,93 +1,81 @@
-# Before you run anything
+# Plan a calculation and keep its record
 
-_Estimated time: 20 minutes | Difficulty: Beginner | Last verified: 2026-09-05_
+Before running a calculation, decide how it will be identified and what you will need to check afterwards. This prevents a directory of similar files from becoming impossible to interpret later, and saves time when a supervisor or another student needs to understand the result.
 
----
+## What you will learn
 
-This page gives you the mental model for the rest of the handbook. You do not need to know every keyword yet. You do need to know which files are inputs, which files are evidence and what a finished calculation looks like.
+By the end of this page, you should be able to explain the difference between an input, a job record, an output and a property file. You should also be able to trace a derived result back to the parent calculation that produced its wavefunction.
 
-## 🎯 Learning goals
+## One base name for one calculation
 
-By the end of this page, you should be able to:
+CRYSTAL23 files with the same base name belong to one calculation:
 
-- explain what a periodic DFT calculation is solving;
-- distinguish SCF convergence from geometry convergence;
-- identify the files that preserve a calculation's history; and
-- decide whether a result is ready for BAND, DOSS or ANBD.
-
-## 🧱 The CRYSTAL23 mental model
-
-CRYSTAL describes a solid with a repeating unit cell, a basis set and an electronic-structure method. It first solves the electronic problem for one fixed structure. During geometry optimisation, it updates the cell and/or atomic coordinates and repeats the electronic calculation until the selected force, displacement and energy criteria are met.[^1]
-
-```mermaid
-flowchart TD
-    accTitle: CRYSTAL23 Calculation States
-    accDescr: A CRYSTAL23 calculation moves from a structural and methodological input to an SCF wavefunction, then optionally through geometry optimisation and property analysis.
-
-    input[Input: cell, atoms, basis, Hamiltonian] --> scf[SCF solution]
-    scf --> scf_ok{SCF converged?}
-    scf_ok -->|No| scf_fix[Adjust or diagnose SCF settings]
-    scf_fix --> scf
-    scf_ok -->|Yes| geometry{Geometry optimisation requested?}
-    geometry -->|Yes| relax[Update cell or coordinates]
-    relax --> scf
-    geometry -->|No| wavefunction[Trusted wavefunction]
-    relax --> opt_ok{Geometry converged?}
-    opt_ok -->|No| relax
-    opt_ok -->|Yes| wavefunction
-    wavefunction --> properties[Run BAND, DOSS or ANBD]
-
-    classDef input_state fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
-    classDef output_state fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
-
-    class input,scf,scf_fix,relax,properties input_state
-    class scf_ok,geometry,opt_ok decision
-    class wavefunction output_state
+```text
+ATOMOPT0.d12
+ATOMOPT0.qsub
+ATOMOPT0.out
+ATOMOPT0.o1873029
+ATOMOPT0.e1873029
+ATOMOPT0.f9
+ATOMOPT0.f98
 ```
 
-## 🔍 Three meanings of "done"
+The base name `ATOMOPT0` connects the input, PBS script, CRYSTAL output, scheduler logs and wavefunction files. The number in `.o1873029` and `.e1873029` is the PBS job ID recorded by this run.
 
-| State | What it means | Evidence to look for |
-| --- | --- | --- |
-| Job completed | The scheduler process stopped and produced files | The queue entry ends and output/error logs exist |
-| SCF converged | The electronic density and energy met the SCF criteria | The output reports convergence and a final energy |
-| Geometry converged | The structure met the optimisation criteria after repeated SCF cycles | The output reports convergence, forces and displacements |
+## Name related calculations
 
-> ⚠️ **Important:** A job can complete without being scientifically usable. Always check the output, not only the queue status.
+The completed project uses names that expose relationships:
 
-## 🗃️ Files you will meet
+```text
+OPT0 -> OPT1
+ATOMOPT0 -> ATOMOPT1
+ATOMOPT1 -> ATOMOPT1_BAND
+ATOMOPT1 -> ATOMOPT1_DOSS
+```
 
-File names vary between local scripts and cluster wrappers, but the roles are stable:
+`OPT` and `ATOMOPT` distinguish two optimisation routes. The number records the next version. The suffix `_BAND` or `_DOSS` identifies a property derived from a named parent.
 
-| File or pattern | Role | Preserve it? |
-| --- | --- | --- |
-| `*.d12` | Main input: structure, basis, Hamiltonian, k-points and SCF/optimisation settings | Yes |
-| `*.d3` | Properties input for BAND, DOSS, ANBD and related analyses | Yes |
-| `*.out` | Human-readable output and the first place to check convergence | Yes |
-| `fort.9`, `fort.98` | Wavefunction/restart files used by many properties runs | Yes |
-| `*.f25`, `*.f98` or local property files | Machine-readable data produced by a particular run | Yes, when used by the analysis |
-| `*.qsub` | PBS resource request and execution commands | Yes |
+This naming pattern is more useful than names such as `new`, `final` or `test2`, because it preserves the calculation history.
 
-Do not assume that a file is interchangeable merely because its name looks similar. A BAND or DOSS calculation must use the wavefunction from the intended, converged parent calculation.
+## Minimum record
 
-## ✅ Pre-run checkpoint
+Before submission, record:
 
-Before submitting a job, record these six items in a short calculation note:
+| Item | Example |
+| --- | --- |
+| Calculation name | `ATOMOPT1` |
+| Purpose | Continue the atomic-coordinate workflow |
+| Parent | `ATOMOPT0` |
+| Main change | Insert the recorded atomic displacements |
+| Input | `ATOMOPT1.d12` |
+| Expected output | `ATOMOPT1.out` and matching wavefunction files |
 
-1. Material and structural model
-2. Hamiltonian and basis set
-3. k-point sampling
-4. SCF and optimisation thresholds
-5. Expected output files
-6. The scientific question the calculation is meant to answer
+After the run, add the job ID, completion status and next calculation.
 
-If you cannot fill in item 6, do not submit a large production job. Start with a small validation calculation or ask which decision the run should support.
+## Files to retain
 
-## 🚀 Next step
+| File | Project role |
+| --- | --- |
+| `.d12` | Main CRYSTAL input |
+| `.qsub` | PBS resources, environment and executable |
+| `.out` | CRYSTAL output used to check the result |
+| `.o<job-id>` | PBS standard output and saved-file report |
+| `.e<job-id>` | PBS error output |
+| `.f9`, `.f98` | Wavefunction files used by later properties jobs |
+| `.xyz`, `.gui`, `.cell`, `.frac` | Structure-related outputs when produced |
+| `.d3` | Properties input |
+| `.BAND`, `.DOSS`, `.f25` | Property data used for analysis or plotting |
 
-Continue to [Linux and PBS essentials](01-linux-and-pbs.md). It explains the terminal commands and scheduler actions used in every later page.
+Do not decide that a job succeeded from the presence of files alone. Later pages show which output lines were used in this project.
 
-## References
+## What remains to be added
 
-[^1]: Dovesi, R., Erba, A., Orlando, R., et al. (2020). *The CRYSTAL code, 1976–2020 and beyond: a long story*. The Journal of Chemical Physics, 152, 204111. https://doi.org/10.1063/5.0004892
+Future versions can add a formal calculation register and a data-retention policy. They should be based on the final group workflow rather than invented for completeness.
+
+## Checkpoint
+
+Before moving on, choose one real calculation and write down its base name, parent (if any), input file, output file and intended next use. If one of these is unknown, leave it blank and resolve it before submission.
+
+## Next
+
+Continue to [Working on CX3](01-linux-and-pbs.md).

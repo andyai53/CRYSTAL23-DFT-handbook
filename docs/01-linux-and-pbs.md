@@ -1,158 +1,164 @@
-# Linux and PBS essentials
+# Working on CX3
 
-_Estimated time: 30 minutes | Difficulty: Beginner | Last verified: 2026-09-05_
+This page contains the small set of terminal commands used repeatedly in the project.
 
----
+## What you will learn
 
-This page teaches the small set of cluster actions used in every CRYSTAL23 run: move through directories, submit a PBS job, monitor it and find the output that needs inspection.
+You will practise the commands needed to reach a project directory, inspect a file, create a new version and submit a job. The commands are deliberately shown one at a time so that you can see what each one does.
 
-## 🖥️ What HPC and PBS mean
+## Connect to Imperial and CX3
 
-**HPC** means *high-performance computing*: shared compute nodes for jobs that are too large or too slow for a personal computer. **PBS** is the scheduler used to request resources and place jobs in a queue. Submit a script with `qsub`, then check it with `qstat`.[^1]
+When working off campus, follow Imperial's [Unified Access instructions](https://www.imperial.ac.uk/admin-services/ict/self-service/connect-communicate/remote-access/unified-access/). Students may need the ICT Service Desk to enable access.
 
-```mermaid
-sequenceDiagram
-    accTitle: PBS Job Lifecycle
-    accDescr: A user submits a CRYSTAL23 script to PBS, PBS schedules it on a compute node, and the user monitors the output until the job ends.
-
-    actor user as User
-    participant login as Login node
-    participant pbs as PBS scheduler
-    participant compute as Compute node
-
-    user->>login: Prepare input and qsub script
-    user->>pbs: qsub job.qsub
-    pbs-->>user: Job ID
-    pbs->>compute: Allocate requested resources
-    compute->>compute: Run CRYSTAL23
-    user->>pbs: qstat Job ID
-    compute-->>login: Write output and error logs
-    pbs-->>user: Job completes
-```
-
-> 📌 **Rule:** Use the login node for editing, light inspection and submission. Run CRYSTAL23 on a compute node allocated by PBS, unless your local HPC guide says otherwise.
-
-## 📋 Prerequisites
-
-| Requirement | How to check | What success looks like |
-| --- | --- | --- |
-| Cluster account and login method | Follow your institution's HPC guide | A shell opens on the login node |
-| CRYSTAL23 access | Use the module or executable path supplied by your group | The command is available inside a test job |
-| PBS commands | `command -v qsub` and `command -v qstat` | Both commands return a path |
-| A validated training input | Use the path supplied by your group | The input and submission script are present |
-
-## 🔧 Essential terminal commands
-
-Run these commands one at a time. Replace `path/to/project` with your own project directory:
+Open a terminal and log in with your own username:
 
 ```bash
-pwd                 # print the current directory
-ls -lah             # list files, including sizes and hidden files
-cd path/to/project  # move into a directory
-mkdir -p jobs logs  # create directories, including missing parents
-cp input.d12 jobs/  # copy an input without changing the original
-less calculation.out
-grep -n "converg\|SCF\|ERROR" calculation.out
-tail -f calculation.out
+ssh your_username@login.cx3.hpc.ic.ac.uk
 ```
 
-Press `q` to exit `less`. Press `Ctrl-C` to stop `tail -f`; this stops the display, not the running cluster job.
-
-## 🗂️ A small project layout
-
-Use one directory per calculation family. Keep generated files away from the source input so that a failed run can be diagnosed without losing the starting point.
-
-```text
-project-name/
-|-- inputs/          # hand-edited .d12 and .d3 files
-|-- jobs/            # .qsub scripts
-|-- logs/            # scheduler stdout and stderr
-|-- outputs/         # .out and wavefunction files
-|-- properties/      # BAND, DOSS and ANBD runs
-|-- figures/         # exported plots, never the only copy of raw data
-`-- notes/           # calculation passport and failure log
-```
-
-## 🚀 A generic PBS submission script
-
-The following script is site-neutral. Replace the resource request and executable setup with the values provided by your HPC administrator or research group.
+After login, confirm the current location:
 
 ```bash
-#!/bin/bash
-#PBS -N crystal_training
-#PBS -l select=1:ncpus=8:mem=16gb
-#PBS -l walltime=01:00:00
-#PBS -j oe
-
-set -euo pipefail
-cd "$PBS_O_WORKDIR"
-
-# Replace this setup and command with your group's approved template.
-# module load crystal23
-
-crystal < inputs/training.d12 > outputs/training.out
+pwd
 ```
 
-Confirm the executable line with your group before submitting. Save the approved script as `jobs/training.qsub`. From the project root, create the output directory and submit it:
+Replace `your_username` with your Imperial username.
+
+## Move through the project
 
 ```bash
-mkdir -p outputs logs
-qsub jobs/training.qsub
+cd /path/to/project
+pwd
+ls -rtl
 ```
 
-PBS returns a job identifier such as `123456.server`. The exact format depends on the cluster.
+- `cd` changes directory.
+- `pwd` prints the current directory.
+- `ls -rtl` lists files by modification time, with the newest files at the bottom.
 
-## 🔍 Monitor and inspect the job
+To list only CRYSTAL output files:
 
 ```bash
-qstat -u "$USER"
-qstat 123456.server
-less outputs/training.out
-grep -n "converg\|SCF\|ERROR" outputs/training.out
+ls *.out
 ```
 
-| Observation | Interpretation | Next action |
-| --- | --- | --- |
-| Job is queued | PBS accepted the request but resources are not available | Wait; do not resubmit repeatedly |
-| Job is running | The process has started | Inspect the output occasionally |
-| Job disappeared | It completed, failed or was deleted | Check the output, error log and exit status |
-| Output stops during SCF | The run may be slow or stuck | Inspect the last iterations and scheduler log |
-
-To stop a job that you have verified should not continue:
+## Create, copy and rename
 
 ```bash
-qdel 123456.server
+mkdir Tutorials
+cd Tutorials
+mkdir LiF
 ```
 
-Delete only the job ID you intend to stop. Keep the output and record why the job was stopped.
+Copy an existing input before changing it:
 
-## 🧪 Verification checklist
+```bash
+cp EXP.d12 OPT0.d12
+```
 
-- [ ] `pwd` shows the intended project directory
-- [ ] The input file is present and readable
-- [ ] The qsub script uses the correct site-specific executable setup
-- [ ] PBS returns a job ID
-- [ ] The output file is created in the expected directory
-- [ ] The output contains an explicit convergence result before you use it for properties
+Rename a file without changing its content:
 
-## 🔧 Common problems
+```bash
+mv old_name.d12 new_name.d12
+```
 
-### `qsub: command not found`
+Compare two versions:
 
-Your shell is not on the expected cluster, or the scheduler environment is not loaded. Confirm the hostname and consult the local HPC guide. Do not install a second scheduler client inside the project.
+```bash
+diff EXP.d12 OPT0.d12
+```
 
-### `Unknown resource` or an invalid `select` line
+No output from `diff` means the files are identical.
 
-PBS resource names differ between sites. Copy a working request from your institution's documentation or a group template, then change one resource at a time.
+## Read and edit text files
 
-### The job completes but no useful output is present
+Open a file for editing:
 
-Check the working directory, executable setup, input path and scheduler error log. A zero-length or very short `.out` file does not show that CRYSTAL23 ran successfully.
+```bash
+vi OPT0.d12
+```
 
-## 🚀 Next step
+The minimum `vi` commands are:
 
-Continue to [Your first CRYSTAL23 job](02-first-crystal23-job.md). That page will add a training input and a pass/fail checkpoint for the first calculation.
+| Key | Action |
+| --- | --- |
+| `i` | Insert text |
+| `Esc` | Leave insert mode |
+| `:wq` | Save and quit |
+| `:q!` | Quit without saving |
 
-## References
+Display a short file:
 
-[^1]: OpenPBS. (n.d.). *OpenPBS documentation and project resources*. https://www.openpbs.org/
+```bash
+cat OPT0.qsub
+```
+
+Open a long output for reading:
+
+```bash
+less OPT0.out
+```
+
+Press `q` to leave `less`.
+
+## Submit and monitor
+
+The project used `qcry23` to create and submit a CRYSTAL job:
+
+```bash
+qcry23 HF.d12 24 1:00
+```
+
+This is the command recorded in the project notes. The core count and walltime are calculation-specific and should be confirmed before reuse. Other completed qsub files requested 64 cores and a two-hour walltime, which shows why the values must remain tied to the run record.
+
+Check your jobs:
+
+```bash
+qstat -u $USER
+```
+
+Submit an existing PBS script:
+
+```bash
+qsub OPT0.qsub
+```
+
+Stop a job only after checking its job ID:
+
+```bash
+qdel 1234567
+```
+
+`1234567` is an example. Replace it with the job ID shown by `qstat`.
+
+## After submission
+
+Use these commands separately:
+
+```bash
+qstat -u $USER
+```
+
+```bash
+ls -rtl
+```
+
+```bash
+ls *.out
+```
+
+The commands are shown in separate blocks because each answers a different question: whether the job is queued, which files changed, and which CRYSTAL outputs exist.
+
+## Checkpoint
+
+You are ready for the next page when you can answer these questions without guessing:
+
+- Which directory am I in?
+- Which input will be submitted?
+- Which command creates the PBS job?
+- Which command shows my job?
+- Which file will I inspect after the job ends?
+
+## Next
+
+Continue to [Creating and submitting a calculation](02-first-crystal23-job.md).

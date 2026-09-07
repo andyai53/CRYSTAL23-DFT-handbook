@@ -1,98 +1,118 @@
 # Geometry optimisation
 
-_Estimated time: 35 minutes | Difficulty: Beginner to intermediate | Last verified: 2026-09-05_
-
----
-
-Geometry optimisation searches for a structure that meets the force, displacement and energy criteria set in the input. Each optimisation step needs a converged electronic solution before the geometry can be updated.
-
-## 🎯 Learning goals
-
-- Distinguish a fixed-geometry SCF calculation from a relaxed structure
-- Explain the difference between cell optimisation and atomic-coordinate optimisation
-- Verify forces, displacements and the final optimisation status
-- Keep slab constraints and symmetry choices explicit
-
-## 🧭 Two layers of convergence
-
-```mermaid
-flowchart TD
-    accTitle: Geometry Optimisation Loop
-    accDescr: Each geometry step requires a converged SCF solution before forces and displacements are evaluated; the loop ends only when the geometry criteria are satisfied.
-
-    geometry[Current geometry] --> scf[Converge the SCF density]
-    scf --> forces[Evaluate energy, forces and displacements]
-    forces --> criteria{Geometry criteria met?}
-    criteria -->|No| update[Update cell and/or atomic coordinates]
-    update --> geometry
-    criteria -->|Yes| final[Accepted relaxed structure]
-
-    classDef primary fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
-    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
-
-    class geometry,scf,forces,update primary
-    class criteria decision
-    class final success
-```
-
-## 🧱 What is being optimised?
-
-| Choice | What changes | Typical use |
-| --- | --- | --- |
-| Fixed-geometry SCF | Nothing in the structure | Final energy or properties at a specified geometry |
-| Atomic-coordinate optimisation | Atomic positions within a fixed cell | Local relaxation, adsorption height, surface rumpling |
-| Cell optimisation | Lattice parameters and often atomic positions | Bulk equilibrium structure |
-| Constrained slab optimisation | Selected coordinates are fixed or restricted | Preserve a bulk-like centre while relaxing the surface |
-
-The keyword and constraint syntax depends on the calculation. In your record, state whether the cell, atoms or both could relax. Also record frozen layers and symmetry restrictions.[^1]
-
-## 🔍 Inspect the final output
-
-Search for the final optimisation block and then read the surrounding lines:
-
-```bash
-grep -n "OPT END\|CONVERGED\|FORCES\|DISPLAC" relaxed.out
-tail -n 120 relaxed.out
-```
-
-A useful completion record contains:
+The completed project contains two related optimisation routes:
 
 ```text
-Optimisation type: [cell + coordinates / coordinates only / constrained slab]
-SCF status at final step: converged
-Final energy: [value and units as printed]
-Maximum force: [value and units as printed]
-Maximum displacement: [value and units as printed]
-Geometry status: converged / not converged
+OPT0 -> OPT1
+ATOMOPT0 -> ATOMOPT1
 ```
 
-`OPT END - CONVERGED` is a common CRYSTAL output marker. Read the surrounding force and displacement values as well. A job reaching walltime or lowering its energy once does not prove that the geometry converged.
+The names and input differences preserve which structure was optimised and which calculation followed it.
 
-## ⚠️ Slab-specific checks
+## What you will learn
 
-For a slab or surface model, check all of the following before using the relaxed structure:
+You will learn how `OPTGEOM`, `ATOMONLY` and `ATOMDISP` appear in the inputs, and how to distinguish an SCF-converged step from a fully converged geometry optimisation.
 
-- The vacuum spacing remains large enough to prevent unintended periodic-image interaction
-- The intended number of layers is present after optimisation
-- Frozen or constrained atoms were applied to the intended region
-- The central layers remain sufficiently bulk-like for the scientific question
-- The final surface geometry does not come from an unconverged SCF step
+## Optimisation in the input
 
-## ✅ Geometry checkpoint
+The basic optimisation block is:
 
-Proceed to BAND, DOSS or ANBD only after the parent structure passes both convergence layers:
+```text
+OPTGEOM
+ENDOPT
+ENDGEOM
+```
 
-- [ ] Final SCF is converged
-- [ ] Final geometry criteria are converged, if optimisation was requested
-- [ ] The relaxed structure was saved separately from the starting input
-- [ ] Constraints and optimisation type are recorded
-- [ ] The wavefunction files correspond to the accepted final structure
+`ATOMOPT0` includes:
 
-## 🚀 Next step
+```text
+OPTGEOM
+ATOMONLY
+ENDOPT
+ENDGEOM
+```
 
-Continue to [Convergence as evidence](06-convergence-as-evidence.md) to learn how to justify numerical choices rather than treating one successful run as proof of accuracy.
+This is the project evidence for an atomic-only optimisation. Do not generalise this block to a different system without checking the input requirements.
 
-## References
+## `OPTGEOM` and `ATOMONLY`
 
-[^1]: CRYSTAL Solutions. (n.d.). *CRYSTAL documentation*. https://www.crystal.unito.it/documentation.html
+In this handbook, “general optimisation” means a calculation with the `OPTGEOM ... ENDOPT` block. `OPTGEOM` starts that geometry-optimisation section; the example inputs do not use a separate `OPT` keyword.
+
+`ATOMONLY` is an option inside that block. It restricts the optimisation to atomic coordinates while leaving the unit cell unchanged in this project. The difference is therefore:
+
+| Input choice | What is allowed to change |
+| --- | --- |
+| `OPTGEOM` without `ATOMONLY` | The optimisation follows the cell/coordinate behaviour specified by the calculation |
+| `OPTGEOM` with `ATOMONLY` | Atomic positions are optimised; the cell is kept fixed in this project |
+
+This is why `OPT0` and `ATOMOPT0` are recorded as different routes. `OPT0.d12` contains `OPTGEOM`; `ATOMOPT0.d12` contains `OPTGEOM` and `ATOMONLY`. The choice should follow the scientific question: use the atomic-only route when the lattice is already fixed and only internal positions should relax. Confirm the exact scope in the CRYSTAL23 manual before using it for another system.
+
+`ATOMDISP` is different again. It supplies explicit atomic displacements for a new input, as seen in `ATOMOPT1` and `OPT1`; it is not another name for `ATOMONLY`.
+
+## Check the output
+
+First check SCF completion:
+
+```bash
+grep "SCF E" ATOMOPT0.out
+```
+
+Then check optimisation completion:
+
+```bash
+grep "OPT END" ATOMOPT0.out
+```
+
+The completed output also contains:
+
+```text
+CONVERGENCE TESTS SATISFIED AFTER ...
+* OPT END - CONVERGED *
+```
+
+The output reports gradient and displacement tests before this final line. Preserve the output rather than copying only the final energy.
+
+## Continue with a changed structure
+
+The project created a new input for a follow-on calculation by retaining the prior input:
+
+```text
+ATOMOPT1.d12
+ATOMOPT1.d12.beforeINSDISP
+```
+
+The new input contains `ATOMDISP` values and, in this example, `BREAKSYM`. Compare the files before submitting:
+
+```bash
+diff ATOMOPT0.d12 ATOMOPT1.d12
+```
+
+The displacement values are part of this project workflow. Their scientific origin and the choice to break symmetry must be recorded with the calculation; they should not be invented by a general tutorial.
+
+## Geometry evidence to retain
+
+The optimisation wrapper saved:
+
+```text
+ATOMOPT0.OPTINFO
+ATOMOPT0.SCFLOG
+ATOMOPT0.optstory/
+ATOMOPT0.xyz
+ATOMOPT0.gui
+```
+
+The `.optstory` directory contains the sequence of geometry files generated during optimisation. Keep it when the optimisation history matters.
+
+## Checkpoint
+
+For an optimisation you want to use later, record:
+
+- whether the cell was allowed to change;
+- whether `ATOMONLY` was present;
+- whether `ATOMDISP` supplied a new starting geometry;
+- the SCF completion line; and
+- the `OPT END - CONVERGED` line.
+
+## Next
+
+Continue to [Managing calculation versions](06-convergence-as-evidence.md).

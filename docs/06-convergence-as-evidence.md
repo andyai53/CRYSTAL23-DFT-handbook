@@ -1,82 +1,78 @@
-# Convergence as evidence
+# Managing calculation versions
 
-_Estimated time: 45 minutes | Difficulty: Intermediate | Last verified: 2026-09-05_
+The project contains variants because each calculation answers a different question or continues a previous calculation. Treat every variant as a named record.
 
----
+## What you will learn
 
-A convergence test is a controlled comparison. Change one numerical or modelling parameter at a time, measure a quantity relevant to your question and record the extra cost.
+You will practise comparing two inputs without losing the earlier version. The aim is to make the reason for a new calculation visible to a future reader.
 
-## 🎯 Learning goals
+## Variant table
 
-- Design a one-parameter-at-a-time convergence test
-- Separate numerical convergence from model validation
-- Compare accuracy, stability and computational cost
-- Turn a group of runs into a traceable decision
+| Name | Parent or relation | Change visible in the input |
+| --- | --- | --- |
+| `OPT0` | Starting optimisation route | `OPTGEOM` |
+| `OPT1` | Follows `OPT0` | `ATOMDISP`, `ELASTIC`, coordinate reporting |
+| `ATOMOPT0` | Starting atomic-only route | `OPTGEOM`, `ATOMONLY` |
+| `ATOMOPT1` | Follows `ATOMOPT0` | `BREAKSYM`, `ATOMDISP`, `ATOMONLY` |
+| `ATOMOPT1_BAND` | Property of `ATOMOPT1` | `.d3` with `BAND` |
+| `ATOMOPT1_DOSS` | Property of `ATOMOPT1` | `.d3` with `DOSS` |
 
-## 🧪 The controlled comparison
+## Create a variant without losing the source
 
-```mermaid
-flowchart LR
-    accTitle: Convergence Test Workflow
-    accDescr: A convergence study defines an observable, varies one parameter across several runs, extracts comparable values and selects a setting using both accuracy and cost.
-
-    question[Define the observable] --> baseline[Choose a baseline]
-    baseline --> vary[Vary one parameter]
-    vary --> run[Run comparable calculations]
-    run --> extract[Extract the same quantity]
-    extract --> compare[Compare change and cost]
-    compare --> decide{Stable enough for the question?}
-    decide -->|No| vary
-    decide -->|Yes| record[Record the decision]
-
-    classDef primary fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
-    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
-    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
-
-    class question,baseline,vary,run,extract,compare primary
-    class decide decision
-    class record success
+```bash
+cp ATOMOPT0.d12 ATOMOPT1.d12
+cp ATOMOPT0.d12 ATOMOPT1.d12.beforeINSDISP
+vi ATOMOPT1.d12
+diff ATOMOPT0.d12 ATOMOPT1.d12
 ```
 
-## 📊 What to test
+The backup documents the pre-edit state. The diff documents the intended change.
 
-| Parameter | Example levels | Observable to compare |
-| --- | --- | --- |
-| Basis set | A small-to-larger sequence | Lattice parameter, bond length, energy difference |
-| k-point sampling | Coarse-to-denser meshes | Total energy, Fermi-level states, band dispersion |
-| SCF threshold | Moderate-to-tighter `TOLDEE` | Energy difference and property stability |
-| Slab thickness | Increasing layer counts | Centre-layer structure and surface energy/property |
-| Smearing or mixing | Several documented values | SCF stability and final electronic result |
+## Keep the same base name across the job
 
-Choose levels that suit the model. Keep the functional, basis, geometry, charge and k-point path fixed unless you are explicitly comparing methods.
-
-## 🧮 Use a decision table
-
-| Run | One changed parameter | Observable | Difference from previous run | Cost | Decision |
-| --- | --- | --- | ---: | ---: | --- |
-| 01 | Baseline | [value] | - | [time] | Reference |
-| 02 | [parameter = level 2] | [value] | [delta] | [time] | Keep or continue |
-| 03 | [parameter = level 3] | [value] | [delta] | [time] | Accept or reject |
-
-"Converged" means stable for the selected observable and tolerance. It does not mean that every property is insensitive to the same setting. State what you tested and what you did not test.
-
-## 📝 Calculation passport entry
-
-For each accepted setting, keep a short note in `notes/calculation-passport.md`:
+If the input is `ATOMOPT1.d12`, the generated submission script and output should use `ATOMOPT1`:
 
 ```text
-Question: [what this calculation supports]
-Observable: [quantity used for the convergence decision]
-Parameter varied: [one parameter]
-Levels tested: [list]
-Acceptance criterion: [numerical criterion and reason]
-Selected level: [value]
-Evidence: [input/output/plot paths]
-Known limitation: [what was not tested]
+ATOMOPT1.d12
+ATOMOPT1.qsub
+ATOMOPT1.out
+ATOMOPT1.f9
+ATOMOPT1.f98
 ```
 
-This note lets another student reproduce the comparison and understand why you selected the production setting.
+For a derived property:
 
-## 🚀 Next step
+```text
+ATOMOPT1_BAND.d3
+ATOMOPT1_BAND.out
+ATOMOPT1_BAND.BAND
+```
 
-Continue to [Properties overview](07-properties-overview.md) once the parent SCF and geometry settings are validated.
+In the completed directory, the properties command was held in `ATOMOPT1.qsub`. The active `runpropP` line records the property name and the `ATOMOPT1` parent.
+
+## What a good variant record says
+
+```text
+New calculation: ATOMOPT1
+Parent: ATOMOPT0
+Reason:
+Input change:
+Files retained:
+PBS job ID:
+Output status:
+Next use:
+```
+
+The `Reason` and `Input change` fields are the important project-management information. A version number alone is not an explanation.
+
+## A small exercise
+
+Choose `ATOMOPT0.d12` and `ATOMOPT1.d12` from a project copy. Run `diff`, then write one sentence describing each changed block. Do not interpret a block whose purpose has not been confirmed; write “purpose to be confirmed” and keep the input as the source.
+
+## Scope
+
+This page does not define a numerical convergence study. A formal basis, k-point or slab-thickness study can be added when the project records and acceptance criteria are available.
+
+## Next
+
+Continue to [Properties calculations](07-properties-overview.md).
